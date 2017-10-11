@@ -1,7 +1,11 @@
 #include "MPC.h"
+#include <math.h>
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
+#include <cppad/ipopt/solve_result.hpp>
 #include "Eigen-3.3/Eigen/Core"
+#include "Eigen-3.3/Eigen/QR"
+#include <vector>
 
 using CppAD::AD;
 
@@ -42,6 +46,14 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
+Dvector MPC::GetDefault(int size){
+  Dvector vars(size);
+  for (int i = 0; i < size; i++) {
+    vars[i] = 0;
+  }
+
+return vars; 
+}
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
   size_t i;
@@ -58,10 +70,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
 
   // Initial value of the independent variables.
   // SHOULD BE 0 besides initial state.
-  Dvector vars(n_vars);
-  for (int i = 0; i < n_vars; i++) {
-    vars[i] = 0;
-  }
+  Dvector vars = GetDefault(n_vars);
 
   Dvector vars_lowerbound(n_vars);
   Dvector vars_upperbound(n_vars);
@@ -109,7 +118,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
 
   // Cost
-  auto cost = solution.obj_value;
+  double cost = (double)solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
 
   // TODO: Return the first actuator values. The variables can be accessed with
@@ -117,5 +126,5 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
-  return {};
+  return vector<double>(2);
 }
