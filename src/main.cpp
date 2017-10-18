@@ -94,18 +94,26 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-	 auto coeffs = polyfit(ptsxxd, ptsyxd, 3);
-	double cte = polyeval(coeffs, px) - py;
-	double epsi = psi - atan(coeffs[1]);
-	Eigen::VectorXd state(6);
-	state << px, py, psi, v, cte, epsi;
- std::vector<double> x_vals = {state[0]};
-  std::vector<double> y_vals = {state[1]};
+for(int i = 0; i < ptsx.size(); i++)
+{     double x = ptsx.at(i) - px;
+     double y = ptsy.at(i) - py;
+     ptsxxd(i) = x * cos(-psi) - y * sin(-psi);
+     ptsyxd(i) = x * sin(-psi) + y * cos(-psi);
+	
 
- std::vector<double> psi_vals = {state[2]};
+}
+
+	 auto coeffs = polyfit(ptsxxd, ptsyxd, 3);
+	double cte = polyeval(coeffs, 0) - 0;
+	double epsi = - atan(coeffs[1]);
+	Eigen::VectorXd state(6);
+	state << 0, 0, 0, v, cte, epsi;
+ std::vector<double> x_vals = {0};
+  std::vector<double> y_vals = {0};
+ 
+ std::vector<double> psi_vals = {psi};
   std::vector<double> a_vals = {};
 	auto vars = mpc.Solve(state, coeffs);
-std::cout <<"finished solve" << std::endl;
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
@@ -117,13 +125,14 @@ std::cout <<"finished solve" << std::endl;
 a_vals.push_back(vars[7]);
   psi_vals.push_back(vars[2]);
           double steer_value = psi_vals.at(1)/deg2rad(25);
-          double throttle_value = a_vals.at(0);
+         double throttle_value = a_vals.at(0);
+ 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
           msgJson["steering_angle"] = -steer_value;
 //          msgJson["throttle"] = throttle_value;
-	msgJson["throttle"] = 0.1;
+	msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
           vector<double> mpc_x_vals(x_vals.size());
@@ -131,11 +140,9 @@ a_vals.push_back(vars[7]);
 for(int i = 0; i < mpc_x_vals.size(); i++)
 {     double x = x_vals.at(i) - px;
      double y = y_vals.at(i) - py;
-     mpc_x_vals.at(i) = x * cos(-psi_vals.at(1)) - y * sin(-psi_vals.at(1));
-     mpc_y_vals.at(i) = x * sin(-psi_vals.at(1)) + y * cos(-psi_vals.at(1));
+     mpc_x_vals.at(i) = x_vals.at(i);
+     mpc_y_vals.at(i) = y_vals.at(i);
 	
-	std::cout <<"mpc xs: "<< mpc_x_vals.at(i) <<endl;
-	std::cout <<"mpc ys: "<< mpc_y_vals.at(i) <<endl;
 
 }
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
@@ -153,8 +160,6 @@ for (int i = 0; i < ptsx.size(); i++) {
      double y = ptsy[i] - py;
      next_x_vals.at(i) = x * cos(-psi) - y * sin(-psi);
      next_y_vals.at(i) = x * sin(-psi) + y * cos(-psi);
-	std::cout << "next xs: " << next_x_vals.at(i) << endl;
-	std::cout << "next ys: " << next_y_vals.at(i) << endl;
 
    }
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system

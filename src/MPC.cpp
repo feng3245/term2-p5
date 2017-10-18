@@ -51,12 +51,16 @@ class FG_eval {
 
 	for(int t = 0; t < N; t++){
 		fg[0] += CppAD::pow(vars[cte_start + t], 2);
-		fg[0] += CppAD::pow(vars[epsi_start + t], 2);
-		fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+		fg[0] += 200*CppAD::pow(vars[epsi_start + t], 2);
+		fg[0] += 0.5*CppAD::pow(vars[v_start + t] - ref_v, 2);
 	}
+  for (int t = 0; t < N - 1; t++) {
+      fg[0] += CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += CppAD::pow(vars[a_start + t], 2);
+    }
 
 	for(int t =0; t< N -2; t++){
-		fg[0] += 100 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+		fg[0] += 5*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
 		fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
 	}
 
@@ -77,19 +81,13 @@ class FG_eval {
 	
 	
 	AD<double> x0 = vars[x_start + t - 1];
-
 	AD<double> y0 = vars[y_start + t - 1];
-
 	AD<double> psi0 = vars[psi_start + t - 1];
-
 	AD<double> v0 = vars[v_start + t - 1];
-
 	AD<double> cte0 = vars[cte_start + t - 1];
-
 	AD<double> epsi0 = vars[epsi_start + t - 1];
 
 	AD<double> delta0 = vars[delta_start + t - 1];
-
 	AD<double> a0 = vars[a_start + t - 1];
 
 	AD<double> f0 = coeffs[0] + coeffs[1] * x0;
@@ -161,12 +159,12 @@ vector<double> MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
 		vars_upperbound[i] = 1.0e19;
 	}
 	for(int i= delta_start; i<a_start; i++){
-		vars_lowerbound[i] = -0.436332;
-		vars_upperbound[i] = 0.436332;
+		vars_lowerbound[i] = -0.698131925192982;
+		vars_upperbound[i] = 0.698131925192982;
 	}
 	for(int i = a_start; i< n_vars; i++)
 	{
-		vars_lowerbound[i] = -1.0;
+		vars_lowerbound[i] = 0.001;
 		vars_upperbound[i] = 1.0;
 	}
   // Lower and upper limits for the constraints
