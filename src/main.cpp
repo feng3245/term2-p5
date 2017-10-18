@@ -94,6 +94,14 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+//User below to update the model to be state at 100 ms after
+		//fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0)*dt);
+//	fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0)*dt);
+//	fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+//	fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
+//	fg[1 + cte_start + t] = cte1 - ((f0 - y0)+(v0 * CppAD::sin(epsi0)*dt));
+//	fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0)+v0 * delta0/Lf * dt);
+		
 for(int i = 0; i < ptsx.size(); i++)
 {     double x = ptsx.at(i) - px;
      double y = ptsy.at(i) - py;
@@ -107,6 +115,7 @@ for(int i = 0; i < ptsx.size(); i++)
 	double cte = polyeval(coeffs, 0) - 0;
 	double epsi = - atan(coeffs[1]);
 	Eigen::VectorXd state(6);
+		
 	state << 0, 0, 0, v, cte, epsi;
  std::vector<double> x_vals = {0};
   std::vector<double> y_vals = {0};
