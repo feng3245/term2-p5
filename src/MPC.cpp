@@ -11,7 +11,7 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25;
+size_t N = 10;
 double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
@@ -25,7 +25,7 @@ double dt = 0.05;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
-double ref_v = 25;
+double ref_v = 30;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -61,7 +61,7 @@ class FG_eval {
     }
 
 	for(int t =0; t< N -2; t++){
-		fg[0] += 100*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+		fg[0] += 1000*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
 		fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
 	}
 

@@ -17,7 +17,7 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 double aprev = 0;
-
+double psideltprev = 0;
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
 // else the empty string "" will be returned.
@@ -98,7 +98,7 @@ int main() {
 	double x0 = (px + v * cos(psi)*0.1);
 	double y0 = (py + v * sin(psi)*0.1);
 	double v0 = (v + aprev * 0.1);
-		
+	double psi0 = (0+psideltprev*0.1 );
 for(int i = 0; i < ptsx.size(); i++)
 {     double x = ptsx.at(i) - x0;
      double y = ptsy.at(i) - y0;
@@ -113,7 +113,7 @@ for(int i = 0; i < ptsx.size(); i++)
 	double epsi = - atan(coeffs[1]);
 	Eigen::VectorXd state(6);
 		
-	state << 0, 0, 0, v0, cte, epsi;
+	state << 0, 0, psi0, v0, cte, epsi;
  std::vector<double> x_vals = {0};
   std::vector<double> y_vals = {0};
  
@@ -130,6 +130,7 @@ for(int i = 0; i < ptsx.size(); i++)
     y_vals.push_back(vars[1]);
 a_vals.push_back(vars[7]);
   psi_vals.push_back(vars[2]);
+psideltprev = vars[6];
           double steer_value = psi_vals.at(1)/deg2rad(25);
          double throttle_value = a_vals.at(0);
  aprev = throttle_value;
@@ -151,6 +152,7 @@ for(int i = 0; i < mpc_x_vals.size(); i++)
 	
 
 }
+
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
 
