@@ -1,6 +1,7 @@
 #include "MPC.h"
 #include <math.h>
 #include <cppad/cppad.hpp>
+#include <cppad/utility/poly.hpp>
 #include <cppad/ipopt/solve.hpp>
 #include <cppad/ipopt/solve_result.hpp>
 #include "Eigen-3.3/Eigen/Core"
@@ -24,7 +25,7 @@ double dt = 0.05;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
-double ref_v = 10;
+double ref_v = 25;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -60,7 +61,7 @@ class FG_eval {
     }
 
 	for(int t =0; t< N -2; t++){
-		fg[0] += 5*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+		fg[0] += 100*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
 		fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
 	}
 
@@ -71,6 +72,7 @@ class FG_eval {
 	fg[1 + cte_start] = vars[cte_start];
 	fg[1 + epsi_start] = vars[epsi_start];
 
+  Eigen::MatrixXd A(N, 3 + 1);
 	for (int t = 1; t < N; t++){
 	AD<double> x1 = vars[x_start + t];
 	AD<double> y1 = vars[y_start + t];
@@ -87,14 +89,14 @@ class FG_eval {
 	AD<double> cte0 = vars[cte_start + t - 1];
 	AD<double> epsi0 = vars[epsi_start + t - 1];
 
+
 	AD<double> delta0 = vars[delta_start + t - 1];
 	AD<double> a0 = vars[a_start + t - 1];
-
-	AD<double> f0 = coeffs[0] + coeffs[1] * x0;
-	AD<double> psides0 = CppAD::atan(coeffs[1]);
-
-	//Fit a third order polynomial here	
-
+//taken from https://www.coin-or.org/CppAD/Doc/poly.cpp.xml
+//fitting third order polynomial arithmatically to estimate cte and epsi
+  AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * x0 * x0 + coeffs[3] * x0 * x0 * x0;
+      AD<double> psides0 =  CppAD::atan(coeffs[1] + 2.0 * coeffs[2] * x0 + 3.0 * coeffs[3] * x0 * x0);
+	
 	fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0)*dt);
 	fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0)*dt);
 	fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
@@ -106,6 +108,7 @@ class FG_eval {
 
 
 	}
+
   }
 };
 
@@ -166,7 +169,7 @@ vector<double> MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
 	}
 	for(int i = a_start; i< n_vars; i++)
 	{
-		vars_lowerbound[i] = 0.001;
+		vars_lowerbound[i] = -1.00;
 		vars_upperbound[i] = 1.0;
 	}
   // Lower and upper limits for the constraints

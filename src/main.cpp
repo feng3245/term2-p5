@@ -16,6 +16,7 @@ using json = nlohmann::json;
 constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
+double aprev = 0;
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -70,7 +71,6 @@ int main() {
 
   // MPC is initialized here!
   MPC mpc;
-
   h.onMessage([&mpc](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -95,16 +95,13 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 //User below to update the model to be state at 100 ms after
-		//fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0)*dt);
-//	fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0)*dt);
-//	fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
-//	fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
-//	fg[1 + cte_start + t] = cte1 - ((f0 - y0)+(v0 * CppAD::sin(epsi0)*dt));
-//	fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0)+v0 * delta0/Lf * dt);
+	double x0 = (px + v * cos(psi)*0.1);
+	double y0 = (py + v * sin(psi)*0.1);
+	double v0 = (v + aprev * 0.1);
 		
 for(int i = 0; i < ptsx.size(); i++)
-{     double x = ptsx.at(i) - px;
-     double y = ptsy.at(i) - py;
+{     double x = ptsx.at(i) - x0;
+     double y = ptsy.at(i) - y0;
      ptsxxd(i) = x * cos(-psi) - y * sin(-psi);
      ptsyxd(i) = x * sin(-psi) + y * cos(-psi);
 	
@@ -116,7 +113,7 @@ for(int i = 0; i < ptsx.size(); i++)
 	double epsi = - atan(coeffs[1]);
 	Eigen::VectorXd state(6);
 		
-	state << 0, 0, 0, v, cte, epsi;
+	state << 0, 0, 0, v0, cte, epsi;
  std::vector<double> x_vals = {0};
   std::vector<double> y_vals = {0};
  
@@ -135,7 +132,7 @@ a_vals.push_back(vars[7]);
   psi_vals.push_back(vars[2]);
           double steer_value = psi_vals.at(1)/deg2rad(25);
          double throttle_value = a_vals.at(0);
- 
+ aprev = throttle_value;
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
