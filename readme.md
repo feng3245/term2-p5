@@ -8,8 +8,8 @@ x y v psi to be predicted values
  x0 = (px + v * cos(psi)*0.1);
         double y0 = (py + v * sin(psi)*0.1);
         double v0 = (v + aprev * 0.1);
-        double psi0 = (0+psideltprev*0.1 );
 
+psi += v*-delta*0.1/2.67;sideltprev = vars[6];
 way points are translated into vehicle coordinate from map coordinates with predicted x and y and current steering.
 for(int i = 0; i < ptsx.size(); i++)
 {     double x = ptsx.at(i) - x0;
@@ -27,7 +27,7 @@ error is then calculated from the derivate of the polynomial
         double epsi = - atan(coeffs[1]);
         Eigen::VectorXd state(6);
 
-        state << 0, 0, psi0, v0, cte, epsi;
+        state << 0, 0, 0, v0, cte, epsi;
  std::vector<double> x_vals = {0};
   std::vector<double> y_vals = {0};
 

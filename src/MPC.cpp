@@ -25,7 +25,7 @@ double dt = 0.05;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
-double ref_v = 30;
+double ref_v = 40;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -164,8 +164,8 @@ vector<double> MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
 		vars_upperbound[i] = 1.0e19;
 	}
 	for(int i= delta_start; i<a_start; i++){
-		vars_lowerbound[i] = -0.698131925192982;
-		vars_upperbound[i] = 0.698131925192982;
+		vars_lowerbound[i] = -0.4363;
+		vars_upperbound[i] = 0.4363;
 	}
 	for(int i = a_start; i< n_vars; i++)
 	{
